@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VoteNova</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- LEFT -->
+    <div class="left">
+        <h1>V<br>O<br>T<br>E<br>N<br>O<br>V<br>A</h1>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center" id="main">
+        <button class="big-btn" onclick="showCreate()">Vote Assistant</button>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <h3>Polls</h3>
+        <div id="pollList"></div>
+    </div>
+
+</div>
+
+<script>
+const API = "http://127.0.0.1:5000/api";
+
+// ================= DASHBOARD =================
+function goHome(){
+    document.getElementById("main").innerHTML = `
+        <button class="big-btn" onclick="showCreate()">Vote Assistant</button>
+    `;
+}
+
+// ================= LOAD POLLS =================
+async function loadPolls(){
+    const res = await fetch(API+"/polls");
+    const data = await res.json();
+
+    let html="";
+    data.forEach(p=>{
+        html += `
+        <div class="poll-item">
+            <span>${p.question}</span>
+
+            <div class="poll-actions">
+                <button onclick="openPoll(${p.id})">Open</button>
+                <button onclick="deletePoll(${p.id})">🗑</button>
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("pollList").innerHTML = html;
+}
+
+// ================= CREATE =================
+function showCreate(){
+    document.getElementById("main").innerHTML = `
+        <button onclick="goHome()">⬅ Back</button>
+        <h2>Create Poll</h2>
+        <input id="q" placeholder="Question">
+        <button onclick="createPoll()">Create</button>
+    `;
+}
+
+async function createPoll(){
+    const q = document.getElementById("q").value.trim();
+
+    if(!q){
+        alert("Poll name cannot be empty");
+        return;
+    }
+
+    const res = await fetch(API+"/create_poll",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({question:q})
+    });
+
+    const data = await res.json();
+    openPoll(data.id);
+}
+
+// ================= OPEN POLL =================
+async function openPoll(id){
+    const res = await fetch(API+"/poll/"+id);
+    const data = await res.json();
+
+    let html = `
+    <button onclick="goHome()">⬅ Back</button>
+    <button onclick="deletePoll(${id})">🗑 Delete Poll</button>
+
+    <h2>Vote</h2>
+
+    <input id="opt" placeholder="Add candidate">
+    <button onclick="addOption(${id})">Add</button>
+    <br><br>
+    `;
+
+    data.forEach(o=>{
+        html += `
+        <button class="vote" onclick="vote(${o.id}, this)">
+            ${o.text}
+        </button>`;
+    });
+
+    html += `
+    <br><br>
+    <button class="result" onclick="showResults(${id})">Results</button>
+    `;
+
+    document.getElementById("main").innerHTML = html;
+}
+
+// ================= ADD OPTION =================
+async function addOption(id){
+    const input = document.getElementById("opt");
+    const text = input.value.trim();
+
+    if(!text){
+        alert("Option cannot be empty");
+        return;
+    }
+
+    await fetch(API+"/add_option",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({text, poll_id:id})
+    });
+
+    input.value = ""; // clear input
+    openPoll(id);
+}
+
+// ================= VOTE (COOLDOWN) =================
+let cooldown = false;
+
+async function vote(id, btn){
+    if(cooldown) return;
+
+    cooldown = true;
+
+    await fetch(API+"/vote",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({option_id:id})
+    });
+
+    btn.classList.add("pressed");
+
+    let time = 3;
+    const original = btn.innerText;
+
+    const interval = setInterval(()=>{
+        btn.innerText = `Wait ${time}...`;
+        time--;
+
+        if(time < 0){
+            clearInterval(interval);
+            btn.innerText = original;
+            btn.classList.remove("pressed");
+            cooldown = false;
+        }
+    }, 1000);
+}
+
+// ================= RESULTS =================
+async function showResults(id){
+    const res = await fetch(API+"/poll/"+id);
+    const data = await res.json();
+
+    window.currentPollId = id;
+
+    let html = `
+    <button onclick="openPoll(${id})">⬅ Back</button>
+    <button onclick="deletePoll(${id})">🗑 Delete Poll</button>
+
+    <h2>Results</h2>
+    `;
+
+    data.forEach(o=>{
+        html += `<div class="result-box">${o.text} : ${o.votes} votes</div>`;
+    });
+
+    html += `
+    <br>
+    <button onclick="savePollName()">💾 Save</button>
+    <button onclick="downloadResults(${id})">⬇ Export</button>
+    `;
+
+    document.getElementById("main").innerHTML = html;
+}
+// ================= DELETE =================
+async function deletePoll(id){
+    if(!confirm("Delete this poll?")) return;
+
+    await fetch(API+"/delete/"+id, {method:"DELETE"});
+
+    goHome();
+    loadPolls();
+}
+
+// ================= EXPORT =================
+async function downloadResults(id){
+    const res = await fetch(API+"/export/"+id);
+    const blob = await res.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "poll_results.txt";
+    a.click();
+}
+loadPolls();
+
+// ================= Save =========================
+async function savePollName(){
+    await fetch(API+"/save_poll_name",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            poll_id: window.currentPollId
+        })
+    });
+
+    alert("Saved ✅");
+    loadPolls();
+}
+
+</script>
+
+</body>
+</html>

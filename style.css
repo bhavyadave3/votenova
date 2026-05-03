@@ -1,0 +1,160 @@
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0a0a0a;
+    color:white;
+}
+
+.layout{
+    display:flex;
+    height:100vh;
+}
+
+/* LEFT */
+.left{
+    width:140px;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#00ffff;
+    font-weight:bold;
+    font-size:22px;
+    text-align:center;
+    letter-spacing:4px;
+}
+
+/* CENTER (MAIN FOCUS 🔥) */
+.center{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    padding:40px;
+}
+
+/* BIG CONTAINER INSIDE CENTER */
+.center-box{
+    width:100%;
+    max-width:700px;
+    text-align:center;
+}
+
+/* RIGHT */
+.right{
+    width:220px;
+    background:#111;
+    padding:15px;
+    overflow-y:auto;
+}
+
+/* INPUT */
+input{
+    width:80%;
+    padding:14px;
+    margin:15px 0;
+    border-radius:30px;
+    border:1px solid #333;
+    background:#111;
+    color:white;
+    font-size:16px;
+}
+
+/* BUTTONS */
+button{
+    padding:14px 28px;
+    margin:10px;
+    border-radius:30px;
+    border:1px solid cyan;
+    background:#111;
+    color:cyan;
+    cursor:pointer;
+    font-size:16px;
+    transition:0.3s;
+}
+
+button:hover{
+    box-shadow:0 0 15px cyan;
+    transform:scale(1.05);
+}
+
+/* BIG BUTTON */
+.big-btn{
+    font-size:28px;
+    padding:30px 60px;
+}
+
+/* VOTE BUTTONS */
+.vote{
+    display:block;
+    width:100%;
+    font-size:18px;
+    padding:18px;
+}
+
+/* RESULT BOX */
+.result-box{
+    background:#111;
+    padding:20px;
+    margin:15px 0;
+    border-radius:20px;
+    font-size:18px;
+    border:1px solid #222;
+}
+
+/* POLL LIST */
+.poll-item{
+    margin:15px 0;
+    font-size:14px;
+}
+/* SAVE BOX */
+.save-box{
+    margin-top:20px;
+}
+
+.save-box input{
+    width:70%;
+    padding:12px;
+    border-radius:25px;
+    border:1px solid #333;
+    background:#111;
+    color:white;
+}
+
+.save-box button{
+    padding:12px 20px;
+    margin-left:10px;
+}
+
+/* BUTTON PRESS EFFECT */
+.vote:active{
+    transform:scale(0.95);
+    box-shadow:0 0 25px cyan inset;
+    background:#001f1f;
+}
+.poll-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:10px 0;
+}
+
+.poll-actions button{
+    margin-left:5px;
+}
+.save-box{
+    margin-top:20px;
+}
+
+.save-box input{
+    padding:10px;
+    border-radius:20px;
+    border:1px solid #333;
+    background:#111;
+    color:white;
+}
+
+.save-box button{
+    margin-left:10px;
+}
